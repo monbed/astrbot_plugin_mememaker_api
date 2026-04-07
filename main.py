@@ -9,10 +9,10 @@ from typing import Dict, List, Set, Optional, Any
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register, StarTools
 from astrbot.api import logger, AstrBotConfig
+from astrbot.api.message_components import Plain
 from astrbot.core.star.filter.event_message_type import EventMessageType
 from .core.permission import PermissionManager
 
-# --- 从我们自己的模块中导入所有“零件” ---
 from .api_client import APIClient
 from .manager import MemeManager
 from .recorder import StatsRecorder
@@ -100,6 +100,7 @@ class MemeMakerApiPlugin(
 
         # 3. 构建指令到处理器的映射
         self.cmd_map = {
+            "表情帮助": self.handle_meme_help,
             "表情列表": self.handle_meme_list,
             "表情详情": self.handle_meme_info,
             "表情详细": self.handle_meme_info,
@@ -159,7 +160,10 @@ class MemeMakerApiPlugin(
         except Exception: return
 
         try:
-            message_text = event.get_message_str().strip()
+            message_text = " ".join(
+                c.text for c in event.get_messages() 
+                if isinstance(c, Plain) and c.text
+            ).strip()
             if not message_text.startswith(self.prefix): return
             
             cleaned_text = message_text[len(self.prefix):].strip()
@@ -192,8 +196,9 @@ class MemeMakerApiPlugin(
 
             for sc_data in self.meme_manager.shortcuts:
                 if await self.recorder.is_meme_disabled(sc_data["meme"].key, event.get_group_id()): continue
-                if match := sc_data["pattern"].fullmatch(cleaned_text):
-                    asyncio.create_task(self.handle_shortcut(event, sc_data["meme"], sc_data["shortcut"], match))
+                if match := sc_data["pattern"].match(cleaned_text):
+                    trailing_text = cleaned_text[match.end():].strip()
+                    asyncio.create_task(self.handle_shortcut(event, sc_data["meme"], sc_data["shortcut"], match, trailing_text))
                     return
             
             if keyword := self.meme_manager.find_keyword_in_text(cleaned_text, self.fuzzy_match):

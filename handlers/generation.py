@@ -292,7 +292,7 @@ class GenerationHandlers:
             self.active_sessions.pop(session_id, None)
             logger.debug(f"后台工人任务结束，会话 {session_id} 已清理。")
 
-    async def handle_shortcut(self, event: AstrMessageEvent, meme: MemeInfo, shortcut: Dict, match: re.Match):
+    async def handle_shortcut(self, event: AstrMessageEvent, meme: MemeInfo, shortcut: Dict, match: re.Match, trailing_text: str = ""):
         try:
             logger.debug(f"快捷指令匹配成功: {meme.key}"); match_dict = match.groupdict()
             texts = [t.format(**match_dict) for t in shortcut.get("texts", [])]
@@ -301,7 +301,7 @@ class GenerationHandlers:
             event.set_extra("shortcut_names", names)
             
             # 【核心修改】直接调用（await）新的“启动器”，而不是迭代
-            await self.meme_generate_handler(event, meme, "", initial_options=options, initial_texts=texts)
+            await self.meme_generate_handler(event, meme, trailing_text, initial_options=options, initial_texts=texts)
 
         except Exception as e:
             logger.error(f"处理快捷指令失败: {e}", exc_info=True)
