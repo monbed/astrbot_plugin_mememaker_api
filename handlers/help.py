@@ -9,7 +9,7 @@ import astrbot.api.message_components as Comp
 from astrbot.api import logger
 
 class HelpHandlers:
-    """一个 Mixin 类，只包含表情列表指令的处理器"""
+    """一个 Mixin 类，包含表情帮助和表情列表相关的指令处理器"""
 
     async def handle_meme_list(self, event: AstrMessageEvent, _=None):
         try:
@@ -60,3 +60,28 @@ class HelpHandlers:
             yield event.plain_result("生成列表图失败了，呜呜...")
         finally:
             event.stop_event()
+
+    async def handle_meme_help(self, event: AstrMessageEvent, _=None):
+        p = self.prefix
+        help_text = (
+            f"【基础指令】\n"
+            f"{p}表情列表: 查看所有支持表情\n"
+            f"{p}表情详情 <词>: 查询具体用法\n"
+            f"{p}表情搜索 <词>: 靠关键词找表情\n"
+            f"{p}<表情名> [图/文]: 制作表情\n"
+            f"{p}随机表情: 随机生成一张\n"
+            f"{p}表情调用统计: 查看使用榜单\n"
+            f"\n【图片处理】(发送图片附带指令)\n"
+            f"支持: {p}水平翻转, {p}竖直翻转, {p}旋转, {p}缩放, {p}裁剪, {p}灰度, {p}反色, {p}水平/竖直拼接\n"
+            f"GIF处理: {p}gif分解, {p}gif合成, {p}gif倒放, {p}gif变速\n"
+            f"\n【群组管理】\n"
+            f"{p}管理列表: 查看本群已禁用列表\n"
+            f"{p}禁用表情 <词>: 本群禁用该表情\n"
+            f"{p}启用表情 <词>: 重新启用该表情\n"
+            f"\n【全局管理】(超管可用)\n"
+            f"{p}刷新表情: 重新加载配置数据\n"
+            f"{p}全局禁用表情 <词>: 全局禁用\n"
+            f"{p}全局启用表情 <词>: 全局启用"
+        )
+        yield event.plain_result(help_text)
+        event.stop_event()

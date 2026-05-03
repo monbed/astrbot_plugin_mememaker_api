@@ -8,6 +8,9 @@ class MemeOption(BaseModel):
     default: Optional[Any] = None
     description: Optional[str] = None
     parser_flags: Dict[str, Any] = Field(default_factory=dict)
+    choices: Optional[List[str]] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
 
 class MemeParams(BaseModel):
     min_images: int
